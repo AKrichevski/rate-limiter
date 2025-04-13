@@ -92,7 +92,7 @@ rate-limiter/
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/rate-limiter.git
+   git clone https://github.com/AKrichevski/rate-limiter.git
    cd rate-limiter
    ```
 
