@@ -1,0 +1,55 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - NODE_ENV=development
+      - RATE_LIMIT_WINDOW_SIZE_SECONDS=60
+      - RATE_LIMIT_STANDARD=500
+      - RATE_LIMIT_HIGH=1000
+    volumes:
+      - ./src:/app/src
+      - ./dist:/app/dist
+    depends_on:
+      - redis
+    command: >
+      sh -c "npm run dev"
+    networks:
+      - rate-limiter-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - rate-limiter-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  rate-limiter-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
